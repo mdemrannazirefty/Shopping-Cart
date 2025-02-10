@@ -1,0 +1,44 @@
+[
+    {
+        "id": 1,
+        "name": "Turmeric Powder",
+        "description": "High-quality turmeric for cooking.",
+        "price": 120,
+        "image": "images/1.jpg"
+    },
+    {
+        "id": 2,
+        "name": "Coriander Powder",
+        "description": "Aromatic coriander powder.",
+        "price": 100,
+        "image": "images/2.jpg"
+    },
+    {
+        "id": 3,
+        "name": "Cumin Powder",
+        "description": "Freshly ground cumin powder.",
+        "price": 150,
+        "image": "images/3.jpg"
+    },
+    {
+        "id": 4,
+        "name": "Chili Powder",
+        "description": "Spicy and flavorful chili powder.",
+        "price": 200,
+        "image": "images/4.jpg"
+    },
+    {
+        "id": 5,
+        "name": "Black Pepper",
+        "description": "Premium quality black pepper.",
+        "price": 250,
+        "image": "images/5.jpg"
+    },
+    {
+        "id": 6,
+        "name": "Garam Masala",
+        "description": "Perfect blend of Indian spices.",
+        "price": 180,
+        "image": "images/6.jpg"
+    }
+]
