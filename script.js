@@ -1,24 +1,23 @@
-// script.js
 document.addEventListener("DOMContentLoaded", () => {
     loadProducts();
-    loadCart(); // Load cart from localStorage
+    loadCart();
 });
 
-let cart = []; // Initialize cart
+let cart = [];
+let appliedPromo = null;
+
+const promoCodes = {
+    "ostad10": 0.10,
+    "ostad5": 0.05
+};
 
 function loadProducts() {
     fetch("products.json")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(products => {
             const productList = document.getElementById("product-list");
             productList.innerHTML = "";
-
-            products.slice(0, 6).forEach(product => {
+            products.forEach(product => {
                 const productCard = document.createElement("div");
                 productCard.classList.add("col-md-4", "mb-4");
                 productCard.innerHTML = `
@@ -32,36 +31,32 @@ function loadProducts() {
                 productList.appendChild(productCard);
             });
         })
-        .catch(error => {
-            console.error("Error loading products:", error);
-        });
+        .catch(error => console.error("Error loading products:", error));
 }
-
 
 function addToCart(id, name, price, image) {
     const existingProduct = cart.find(item => item.id === id);
-
     if (existingProduct) {
         existingProduct.quantity++;
     } else {
         cart.push({ id, name, price, image, quantity: 1 });
     }
+    updateCart();
+}
 
+function updateCart() {
     updateCartCount();
     updateCartTable();
     saveCart();
 }
 
 function updateCartCount() {
-    const cartCount = document.getElementById("cart-count");
-    cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    document.getElementById("cart-count").textContent = cart.reduce((total, item) => total + item.quantity, 0);
 }
-
 
 function updateCartTable() {
     const cartTableBody = document.getElementById("cart-table").querySelector("tbody");
     cartTableBody.innerHTML = "";
-
     cart.forEach(item => {
         const row = cartTableBody.insertRow();
         row.innerHTML = `
@@ -73,10 +68,16 @@ function updateCartTable() {
             <td><button class="btn btn-danger btn-sm" onclick="removeFromCart(${item.id})">Remove</button></td>
         `;
     });
-
     updateCartTotal();
 }
 
+function updateCartTotal() {
+    const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    let discount = appliedPromo ? subtotal * promoCodes[appliedPromo] : 0;
+    document.getElementById("cart-subtotal").textContent = subtotal;
+    document.getElementById("cart-discount").textContent = `৳${discount.toFixed(2)}`;
+    document.getElementById("cart-total").textContent = (subtotal - discount).toFixed(2);
+}
 function updateQuantity(id, quantity) {
     const item = cart.find(item => item.id === id);
     if (item && quantity > 0) {
@@ -95,16 +96,24 @@ function removeFromCart(id) {
     saveCart();
 }
 
-function clearCart() {
-    cart = [];
-    updateCartTable();
-    updateCartCount();
-    saveCart();
+function applyPromoCode() {
+    const promoInput = document.getElementById("promo-code").value.trim();
+    const promoMessage = document.getElementById("promo-message");
+    if (promoCodes[promoInput]) {
+        appliedPromo = promoInput;
+        updateCartTotal();
+        promoMessage.textContent = `Promo code applied: ${promoInput} (${promoCodes[promoInput] * 100}% discount)`;
+        promoMessage.style.color = "green";
+    } else {
+        promoMessage.textContent = "Invalid promo code.";
+        promoMessage.style.color = "red";
+    }
 }
 
-function updateCartTotal() {
-    const cartTotal = document.getElementById("cart-total");
-    cartTotal.textContent = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+function clearCart() {
+    cart = [];
+    appliedPromo = null;
+    updateCart();
 }
 
 function checkout() {
@@ -112,26 +121,18 @@ function checkout() {
         alert("Your cart is empty!");
         return;
     }
-
-    const order = {
-        items: cart,
-        total: document.getElementById("cart-total").textContent,
-    };
-
-    localStorage.setItem("latestOrder", JSON.stringify(order));
-    clearCart();
     alert("Thank you for your order!");
+    clearCart();
 }
 
 function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
 }
 
 function loadCart() {
-    const storedCart = localStorage.getItem('cart');
+    const storedCart = localStorage.getItem("cart");
     if (storedCart) {
         cart = JSON.parse(storedCart);
-        updateCartCount();
-        updateCartTable();
+        updateCart();
     }
 }
